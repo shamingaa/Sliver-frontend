@@ -15,6 +15,7 @@ function App() {
   const [pdfData, setPdfData] = useState(null);
   const [pdfInfo, setPdfInfo] = useState(null);
   const [selectedGoal, setSelectedGoal] = useState(5);
+  const [startingPage, setStartingPage] = useState(1);
   const [isDragging, setIsDragging] = useState(false);
 
   const habit = useHabitEngine();
@@ -94,9 +95,9 @@ function App() {
 
   // Start reading with selected goal
   const startReading = useCallback(() => {
-    habit.initializeHabit(selectedGoal, pdfInfo.totalPages);
+    habit.initializeHabit(selectedGoal, pdfInfo.totalPages, startingPage);
     setView('dashboard');
-  }, [habit, selectedGoal, pdfInfo]);
+  }, [habit, selectedGoal, pdfInfo, startingPage]);
 
   // Reset everything
   const handleReset = useCallback(async () => {
@@ -245,11 +246,31 @@ function App() {
             ))}
           </div>
 
+          {/* Starting Page */}
+          <div className="mb-8">
+            <label className="label">Already started reading?</label>
+            <div className="flex items-center gap-3">
+              <span className="text-cream-muted text-sm">Start from page</span>
+              <input
+                type="number"
+                min={1}
+                max={pdfInfo?.totalPages || 1}
+                value={startingPage}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value) || 1;
+                  setStartingPage(Math.max(1, Math.min(val, pdfInfo?.totalPages || 1)));
+                }}
+                className="input w-24 text-center"
+              />
+              <span className="text-cream-muted text-sm">of {pdfInfo?.totalPages}</span>
+            </div>
+          </div>
+
           {/* Estimated completion */}
           <p className="text-cream-muted text-sm mb-8">
             At {selectedGoal} pages/day, you'll finish in approximately{' '}
             <span className="text-gold">
-              {Math.ceil(pdfInfo?.totalPages / selectedGoal)} days
+              {Math.ceil((pdfInfo?.totalPages - startingPage + 1) / selectedGoal)} days
             </span>
           </p>
 

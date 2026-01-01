@@ -14,12 +14,12 @@ function getMidnight() {
   return tomorrow;
 }
 
-function createInitialState(dailyGoal, totalPages) {
+function createInitialState(dailyGoal, totalPages, startingPage = 1) {
   return {
     startDate: getToday(),
     dailyGoal,
     totalPages,
-    currentPage: 1,
+    currentPage: startingPage,
     daysCompleted: [],
     pagesReadByDate: {},
     lastReadDate: null,
@@ -119,8 +119,8 @@ export function useHabitEngine() {
   }, [habitData]);
 
   // Initialize a new habit
-  const initializeHabit = useCallback((dailyGoal, totalPages) => {
-    const newData = createInitialState(dailyGoal, totalPages);
+  const initializeHabit = useCallback((dailyGoal, totalPages, startingPage = 1) => {
+    const newData = createInitialState(dailyGoal, totalPages, startingPage);
     setHabitData(newData);
   }, []);
 
