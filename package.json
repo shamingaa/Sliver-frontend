@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "New habit of reading",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "New habit of reading"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
