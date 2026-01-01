@@ -14,7 +14,7 @@ function getDeviceId() {
 // Track an event to the backend
 export async function trackEvent(bookTitle, eventType) {
   try {
-    const response = await fetch('/api/track', {
+    const response = await fetch('https://sliver-api.bitinverse.com/api/track', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -31,6 +31,8 @@ export async function trackEvent(bookTitle, eventType) {
       return false;
     }
 
+    console.log("YAM!");
+    
     return true;
   } catch (error) {
     // Silently fail - tracking should never break the app
