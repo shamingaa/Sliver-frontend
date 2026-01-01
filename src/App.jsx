@@ -28,6 +28,7 @@ function App() {
   // Track events only once per trigger
   const hasTrackedFreedom = useRef(false);
   const lastTrackedGoalDate = useRef(null);
+  const hasInitialized = useRef(false);
 
   // Track daily goal reached and freedom mode
   useEffect(() => {
@@ -50,27 +51,37 @@ function App() {
 
   // Initial load - check for existing session
   useEffect(() => {
+    if (habit.isLoading) return;
+
     const init = async () => {
       const storedPdf = await getPDF();
 
       if (storedPdf && habit.rawData) {
         setPdfData(storedPdf.data);
         setPdfInfo({ name: storedPdf.name, totalPages: habit.totalPages });
-        setView('dashboard');
+        // Only change view if still in loading state (prevents redirect while reading)
+        if (!hasInitialized.current) {
+          hasInitialized.current = true;
+          setView('dashboard');
+        }
       } else if (storedPdf && !habit.rawData) {
         // PDF exists but no habit data - go to goal selection
         setPdfData(storedPdf.data);
         const doc = await pdfjsLib.getDocument({ data: storedPdf.data }).promise;
         setPdfInfo({ name: storedPdf.name, totalPages: doc.numPages });
-        setView('goal');
+        if (!hasInitialized.current) {
+          hasInitialized.current = true;
+          setView('goal');
+        }
       } else {
-        setView('onboarding');
+        if (!hasInitialized.current) {
+          hasInitialized.current = true;
+          setView('onboarding');
+        }
       }
     };
 
-    if (!habit.isLoading) {
-      init();
-    }
+    init();
   }, [habit.isLoading, habit.rawData, habit.totalPages]);
 
   // Handle file upload
