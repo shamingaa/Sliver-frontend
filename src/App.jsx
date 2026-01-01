@@ -1,8 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useHabitEngine } from './hooks/useHabitEngine';
 import { savePDF, getPDF, clearAllData } from './lib/storage';
 import PDFReader from './components/PDFReader';
+import {
+  trackUploadStarted,
+  trackDailyGoalReached,
+  trackFreedomStageReached
+} from './utils/tracking';
 
 // Set worker path for PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -19,6 +24,29 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
 
   const habit = useHabitEngine();
+
+  // Track events only once per trigger
+  const hasTrackedFreedom = useRef(false);
+  const lastTrackedGoalDate = useRef(null);
+
+  // Track daily goal reached and freedom mode
+  useEffect(() => {
+    if (!pdfInfo?.name || habit.isLoading) return;
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Track daily goal reached (once per day, only if habit is active)
+    if (habit.isActive && !habit.canReadMore && !habit.isFreedomMode && lastTrackedGoalDate.current !== today) {
+      lastTrackedGoalDate.current = today;
+      trackDailyGoalReached(pdfInfo.name);
+    }
+
+    // Track freedom mode reached (once ever)
+    if (habit.isFreedomMode && !hasTrackedFreedom.current) {
+      hasTrackedFreedom.current = true;
+      trackFreedomStageReached(pdfInfo.name);
+    }
+  }, [habit.isActive, habit.canReadMore, habit.isFreedomMode, habit.isLoading, pdfInfo?.name]);
 
   // Initial load - check for existing session
   useEffect(() => {
@@ -69,6 +97,9 @@ function App() {
       setPdfInfo({ name: file.name, totalPages: doc.numPages });
       setPdfFile(file);
       setView('goal');
+
+      // Track upload event
+      trackUploadStarted(file.name);
     } catch (error) {
       console.error('Failed to process PDF:', error);
       alert('Failed to process PDF file');
