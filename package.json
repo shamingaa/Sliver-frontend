@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "New habit of reading",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "New habit of reading"
   },
